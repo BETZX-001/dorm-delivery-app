@@ -344,6 +344,37 @@ npm ci
 - Push notification, Google PSU Sign-In และการโทรควรทดสอบบนโทรศัพท์จริง
 - ระบบอยู่ในช่วง Beta/UAT ควรใช้ข้อมูลจำลองระหว่างทดสอบ
 
+## Deploy Backend บน Render
+
+Repository มี `render.yaml` สำหรับสร้าง Backend ออนไลน์โดยไม่ต้องเปิด `npm run dev` บนคอมพิวเตอร์:
+
+1. สมัครหรือเข้าสู่ระบบ [Render](https://render.com/) ด้วย GitHub
+2. เลือก **New > Blueprint** แล้วเลือก Repository `BETZX-001/dorm-delivery-app`
+3. Render จะอ่าน `render.yaml` และสร้าง Web Service ชื่อ `hiu-dorm-delivery-api`
+4. ใส่ Environment Variables ที่ถูกกำหนดเป็น `sync: false` ให้ครบ
+5. กด Deploy และรอจน `/health` แสดงสถานะ `ok`
+
+ค่าที่ต้องนำมาจาก Firebase Admin service-account JSON:
+
+```text
+FIREBASE_PROJECT_ID     = ค่า project_id
+FIREBASE_CLIENT_EMAIL   = ค่า client_email
+FIREBASE_PRIVATE_KEY    = ค่า private_key ทั้งก้อน รวม BEGIN/END PRIVATE KEY
+ADMIN_EMAILS            = อีเมลแอดมิน คั่นหลายบัญชีด้วยเครื่องหมายจุลภาค
+```
+
+ห้ามนำค่าเหล่านี้ใส่ใน GitHub หลัง Deploy สำเร็จ Render จะให้ URL ลักษณะนี้:
+
+```text
+https://hiu-dorm-delivery-api.onrender.com
+```
+
+นำ URL จริงไปใส่ใน `front-end/.env` ก่อน Build APK:
+
+```env
+API_BASE_URL=https://ชื่อ-serviceจริง.onrender.com
+```
+
 ## โครงสร้างโปรเจกต์
 
 ```text
