@@ -16,11 +16,13 @@ CREATE TABLE IF NOT EXISTS Users (
   name          VARCHAR(100)  NOT NULL,
   email         VARCHAR(150)  NOT NULL UNIQUE,
   phone         VARCHAR(20)   NULL,
+  gender        ENUM('MALE', 'FEMALE', 'LGBTQ_PLUS', 'UNSPECIFIED') NOT NULL DEFAULT 'UNSPECIFIED',
   dorm_name     VARCHAR(100)  NOT NULL,
   room_number   VARCHAR(20)   NULL,
   role          ENUM('RUNNER', 'REQUESTER') NOT NULL DEFAULT 'REQUESTER',
   avg_rating    DECIMAL(3,2)  NOT NULL DEFAULT 0.00,
   push_token    VARCHAR(255)  NULL,                       -- Expo push token, set from the client
+  profile_image MEDIUMTEXT    NULL,                       -- Compressed data URL shared across clients
   created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   INDEX idx_users_dorm_name (dorm_name)
@@ -34,6 +36,7 @@ CREATE TABLE IF NOT EXISTS Slots (
   runner_id       CHAR(36)      NOT NULL,
   destination     VARCHAR(150)  NOT NULL,
   dorm_name       VARCHAR(100)  NOT NULL,   -- denormalized for fast matching queries
+  start_time       DATETIME      NOT NULL,
   cut_off_time    DATETIME      NOT NULL,
   max_orders      INT           NOT NULL DEFAULT 1,
   current_orders  INT           NOT NULL DEFAULT 0,
@@ -60,7 +63,7 @@ CREATE TABLE IF NOT EXISTS Orders (
   item_name     VARCHAR(200)  NOT NULL,
   quantity      INT           NOT NULL DEFAULT 1,
   note          VARCHAR(255)  NULL,
-  order_status  ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'SHOPPING', 'DELIVERING', 'COMPLETED')
+  order_status  ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'SHOPPING', 'WAITING', 'DELIVERING', 'COMPLETED')
                 NOT NULL DEFAULT 'PENDING',
   created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

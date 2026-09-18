@@ -24,14 +24,28 @@ function calculateEta({ pendingOrderCount = 1 } = {}) {
  * device push tokens wired up yet. Swap the body of this function for a
  * fetch() call to the Expo endpoint when you're ready to go live.
  */
-async function sendMockPushNotification({ pushToken, title, body, data }) {
+async function sendPushNotification({ pushToken, title, body, data }) {
   if (!pushToken) {
     console.log(`[push:skipped] no push_token on file — would have sent "${title}"`);
     return { sent: false, reason: 'no_push_token' };
   }
 
-  console.log('[push:mock]', JSON.stringify({ to: pushToken, title, body, data }, null, 2));
-  return { sent: true, mock: true };
+  try {
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: pushToken, sound: 'default', channelId: 'orders', title, body, data }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result?.data?.status === 'error') {
+      console.error('[push:error]', result?.data?.message || response.statusText);
+      return { sent: false, reason: result?.data?.message || 'expo_push_error' };
+    }
+    return { sent: true, ticket: result.data };
+  } catch (error) {
+    console.error('[push:error]', error.message);
+    return { sent: false, reason: error.message };
+  }
 }
 
-module.exports = { calculateEta, sendMockPushNotification };
+module.exports = { calculateEta, sendPushNotification };

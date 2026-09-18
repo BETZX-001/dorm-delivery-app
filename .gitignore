@@ -1,3 +1,25 @@
-node_modules/
-.env
-back-end/dorm-delivery-app-firebase-adminsdk-fbsvc-972a2b99c7.json
+# Dependencies and generated output
+**/node_modules/
+**/.npm-cache/
+**/.expo/
+**/.expo-*/
+**/.codex-*/
+**/dist/
+**/web-build/
+**/*.log
+
+# Local configuration and credentials
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+**/*firebase-adminsdk*.json
+**/serviceAccount*.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

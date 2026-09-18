@@ -1,19 +1,30 @@
 // src/theme/theme.js
-// Central place to drop in your Figma design tokens (colors, spacing, typography).
-// Every screen/component below imports from here instead of hardcoding values,
-// so re-skinning the app later means editing this file only.
+import { Platform } from 'react-native';
+
+// Native system fonts give Thai text excellent readability without a remote
+// font download. Android resolves this to the professional Noto Sans Thai UI font.
+export const fontFamily = Platform.select({ ios: 'Avenir Next', android: 'sans-serif', default: 'System' });
 
 export const colors = {
-  primary: '#4F46E5',
-  primaryDark: '#3730A3',
-  secondary: '#F59E0B',
-  background: '#FFFFFF',
-  surface: '#F3F4F6',
-  border: '#E5E7EB',
-  textPrimary: '#111827',
-  textSecondary: '#6B7280',
-  danger: '#DC2626',
-  success: '#16A34A',
+  primary: '#FF672D',
+  primaryDark: '#E94E16',
+  runner: '#06B953',
+  runnerDark: '#039A43',
+  contact: '#0F766E',
+  contactDark: '#0B5F59',
+  contactSoft: '#E8F6F4',
+  contactBorder: '#B9E3DE',
+  secondary: '#FFB800',
+  background: '#F7F8FA',
+  surface: '#FFFFFF',
+  muted: '#F1F3F6',
+  border: '#E4E8EF',
+  textPrimary: '#10213E',
+  textSecondary: '#94A0B5',
+  danger: '#F04D5D',
+  success: '#06B953',
+  softOrange: '#FFF0EA',
+  softGreen: '#E6F9EF',
   white: '#FFFFFF',
 };
 
@@ -27,15 +38,15 @@ export const spacing = {
 
 export const radii = {
   sm: 6,
-  md: 12,
-  lg: 20,
+  md: 14,
+  lg: 22,
   pill: 999,
 };
 
 export const typography = {
-  h1: { fontSize: 28, fontWeight: '700' },
-  h2: { fontSize: 22, fontWeight: '700' },
-  body: { fontSize: 16, fontWeight: '400' },
-  caption: { fontSize: 13, fontWeight: '400' },
-  button: { fontSize: 16, fontWeight: '600' },
+  h1: { fontFamily, fontSize: 28, fontWeight: '800', letterSpacing: -0.35 },
+  h2: { fontFamily, fontSize: 22, fontWeight: '800', letterSpacing: -0.2 },
+  body: { fontFamily, fontSize: 16, fontWeight: '400' },
+  caption: { fontFamily, fontSize: 13, fontWeight: '500' },
+  button: { fontFamily, fontSize: 16, fontWeight: '700' },
 };

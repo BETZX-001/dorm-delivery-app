@@ -19,7 +19,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer style={{ flex: 1 }}>
       {isAuthenticated ? <MainTabs /> : <AuthStack />}
     </NavigationContainer>
   );

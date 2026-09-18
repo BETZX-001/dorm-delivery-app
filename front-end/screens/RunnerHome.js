@@ -13,6 +13,12 @@ import PrimaryButton from '../components/PrimaryButton';
 import StatusBadge from '../components/StatusBadge';
 import { colors, spacing, radii, typography } from '../components/theme';
 
+function hasNotExpired(slot) {
+  if (!slot.cut_off_time) return false;
+  const cutOff = new Date(slot.cut_off_time).getTime();
+  return Number.isFinite(cutOff) && cutOff > Date.now();
+}
+
 export default function RunnerHome({ navigation }) {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +29,7 @@ export default function RunnerHome({ navigation }) {
     setError(null);
     try {
       const { slots: data } = await api.get('/api/slots/mine');
-      setSlots(data);
+      setSlots((data || []).filter(hasNotExpired));
     } catch (err) {
       setError(err.message);
     } finally {
