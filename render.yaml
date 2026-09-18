@@ -2,6 +2,7 @@ services:
   - type: web
     name: hiu-dorm-delivery-api
     runtime: node
+    plan: free
     rootDir: back-end
     buildCommand: npm ci --omit=dev
     startCommand: npm start
