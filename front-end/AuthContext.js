@@ -76,7 +76,13 @@ export function AuthProvider({ children }) {
             const pending = await AsyncStorage.getItem('pendingProfile');
             if (pending) {
               const payload = JSON.parse(pending);
-              await api.post('/api/users/sync', payload);
+              const pendingEmail = payload.email?.trim().toLowerCase();
+              const signedInEmail = user.email?.trim().toLowerCase();
+              if (pendingEmail && pendingEmail !== signedInEmail) {
+                throw new Error('ข้อมูลสมัครสมาชิกเป็นของบัญชีอื่น');
+              }
+              const { email: _pendingEmail, ...profilePayload } = payload;
+              await api.post('/api/users/sync', profilePayload);
               const { user: dbUser } = await api.get('/api/users/me');
               console.log('✅ profile synced + loaded:', dbUser);
               setProfile(dbUser);

@@ -138,10 +138,22 @@ async function updateMe(req, res) {
   if (!GENDERS.has(gender)) return res.status(400).json({ error: 'ข้อมูลเพศไม่ถูกต้อง' });
   try {
     const ref = users.doc(uid);
-    if (!(await ref.get()).exists) return res.status(404).json({ error: 'User profile not found' });
-    await ref.update({
-      name: name.trim(), phone: phone?.trim() || null, gender, dorm_name: dorm_name.trim(),
-      room_number: room_number?.trim() || null, updated_at: admin.firestore.Timestamp.now(),
+    await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(ref);
+      const existing = snapshot.data() || {};
+      transaction.set(ref, {
+        user_id: uid,
+        email: req.user.email,
+        name: name.trim(),
+        phone: phone?.trim() || null,
+        gender,
+        dorm_name: dorm_name.trim(),
+        room_number: room_number?.trim() || null,
+        role: existing.role || 'REQUESTER',
+        avg_rating: Number(existing.avg_rating || 0),
+        created_at: existing.created_at || admin.firestore.Timestamp.now(),
+        updated_at: admin.firestore.Timestamp.now(),
+      }, { merge: true });
     });
     return res.json({ user: docData(await ref.get(), COLLECTIONS.users) });
   } catch (error) {

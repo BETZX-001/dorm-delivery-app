@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../firebase';
 import { api } from '../client';
@@ -37,6 +37,17 @@ export default function RegisterScreen({ navigation }) {
   const scrollRef = useRef(null);
   const verificationChecking = useRef(false);
 
+  function pendingProfilePayload() {
+    return {
+      email: form.email.trim().toLowerCase(),
+      name: `${form.firstName.trim()} ${form.lastName.trim()}`,
+      phone: form.phone.trim(),
+      gender: form.gender,
+      dorm_name: form.dorm_name.trim(),
+      room_number: form.room_number.trim() || null,
+    };
+  }
+
   useEffect(() => {
     if (step !== 4 || verificationComplete) return undefined;
     let active = true;
@@ -50,7 +61,6 @@ export default function RegisterScreen({ navigation }) {
         if (active && auth.currentUser?.emailVerified) {
           await auth.currentUser.getIdToken(true);
           await api.post('/api/auth/password/claim', { password: form.password });
-          await AsyncStorage.setItem('pendingProfile', JSON.stringify({ name: `${form.firstName.trim()} ${form.lastName.trim()}`, phone: form.phone.trim(), gender: form.gender, dorm_name: form.dorm_name.trim(), room_number: form.room_number.trim() || null }));
           setVerificationComplete(true);
           setVerificationError('');
           await signOut(auth);
@@ -123,9 +133,37 @@ export default function RegisterScreen({ navigation }) {
     try {
       await api.postPublic('/api/auth/password/check', { password: form.password });
       const credential = await createUserWithEmailAndPassword(auth, form.email.trim(), form.password);
+      // Save the profile before opening the external verification link. Firebase
+      // may route into the app as soon as verification succeeds, unmounting this
+      // screen before its polling callback gets a chance to persist the draft.
+      await AsyncStorage.setItem('pendingProfile', JSON.stringify(pendingProfilePayload()));
       await sendEmailVerification(credential.user);
       goToStep(4);
     } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        try {
+          const credential = await signInWithEmailAndPassword(auth, form.email.trim(), form.password);
+          await AsyncStorage.setItem('pendingProfile', JSON.stringify(pendingProfilePayload()));
+          await credential.user.reload();
+          if (auth.currentUser?.emailVerified) {
+            await auth.currentUser.getIdToken(true);
+            await api.post('/api/users/sync', pendingProfilePayload());
+            await AsyncStorage.removeItem('pendingProfile');
+            setVerificationComplete(true);
+            goToStep(4);
+            await signOut(auth);
+            setTimeout(() => navigation.replace('Login'), 2200);
+          } else {
+            await sendEmailVerification(auth.currentUser);
+            goToStep(4);
+          }
+          return;
+        } catch (recoverError) {
+          // The address exists but the entered password cannot recover it.
+          // Continue with the normal, explicit error below.
+          if (auth.currentUser) await signOut(auth).catch(() => {});
+        }
+      }
       const message = /รหัสผ่านซ้ำ/.test(error.message || '') ? 'รหัสผ่านซ้ำ' : mapAuthError(error.code, error.message);
       if (/รหัสผ่านซ้ำ/.test(message)) goToStep(2, false);
       setSubmitError(message);
