@@ -7,9 +7,11 @@ import { auth } from './firebase';
 const configuredBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl;
 // Web and API normally run on the same computer. Deriving the host prevents
 // the app from hanging whenever DHCP gives the development machine a new IP.
-const BASE_URL = Platform.OS === 'web' && typeof window !== 'undefined'
-  ? `${window.location.protocol}//${window.location.hostname}:4000`
-  : configuredBaseUrl;
+const BASE_URL = configuredBaseUrl || (
+  Platform.OS === 'web' && typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:4000`
+    : undefined
+);
 const READ_TIMEOUT_MS = 15_000;
 const MUTATION_TIMEOUT_MS = 35_000;
 const responseCache = new Map();
