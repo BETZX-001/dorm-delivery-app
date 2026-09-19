@@ -372,7 +372,6 @@ export default function HomeScreen({ navigation }) {
   async function changeMode() {
     const next = isRunner ? "REQUESTER" : "RUNNER";
     setSwitchTarget(next);
-    navigation.getParent()?.setOptions({ tabBarStyle: { display: "none" } });
     setSwitching(true);
     pop.setValue(0.7);
     Animated.spring(pop, { toValue: 1, useNativeDriver: true }).start();
@@ -384,7 +383,6 @@ export default function HomeScreen({ navigation }) {
       } finally {
         setSwitching(false);
         setSwitchTarget(null);
-        navigation.getParent()?.setOptions({ tabBarStyle: undefined });
       }
     }, 1050);
   }

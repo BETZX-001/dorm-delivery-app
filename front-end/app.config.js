@@ -3,19 +3,24 @@ require('dotenv').config();
 
 export default {
   expo: {
-    name: 'Dorm Delivery',
+    name: 'Hiu',
     slug: 'dorm-delivery',
     // Used by the browser-based Google OAuth flow.  This value is public
     // (OAuth client IDs are not secrets), so it is safe to keep in app config.
     scheme: 'hiu',
     version: '1.0.0',
+    icon: './assets/hiu-logo.png',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
     plugins: ['expo-notifications'],
 
     // เพิ่มการตั้งค่าแพ็กเกจ Android ตรงนี้ครับ
     android: {
-      package: 'com.hiu.dormdelivery'
+      package: 'com.hiu.dormdelivery',
+      adaptiveIcon: {
+        foregroundImage: './assets/hiu-logo.png',
+        backgroundColor: '#FFFFFF',
+      },
     },
 
     extra: {
