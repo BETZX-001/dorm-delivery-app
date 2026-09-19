@@ -35,6 +35,7 @@ async function sendPushNotification({ pushToken, title, body, data }) {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({ to: pushToken, sound: 'default', channelId: 'orders', title, body, data }),
+      signal: AbortSignal.timeout(5_000),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result?.data?.status === 'error') {

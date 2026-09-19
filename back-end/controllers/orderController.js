@@ -55,7 +55,7 @@ async function placeOrder(req, res) {
     const createdOrder = docData(await orders.doc(String(orderId)).get(), COLLECTIONS.orders);
     const slot = docData(await slots.doc(String(slot_id)).get(), COLLECTIONS.slots);
     const runner = slot?.runner_id ? await users.doc(String(slot.runner_id)).get() : null;
-    await sendPushNotification({
+    void sendPushNotification({
       pushToken: runner?.data()?.push_token, title: 'มีออเดอร์ใหม่',
       body: `${item_name.trim()} × ${Number(quantity)} มีผู้ฝากซื้อเข้ามา`,
       data: { order_id: orderId, slot_id: normalizeId(slot_id), type: 'ORDER_CREATED' },
@@ -203,7 +203,7 @@ async function updateOrderStatus(req, res) {
       const { etaMinutes, etaTime } = calculateEta({ pendingOrderCount: activeCount });
       etaPayload = { etaMinutes, etaTime };
       const requester = await users.doc(original.requester_id).get();
-      await sendPushNotification({
+      void sendPushNotification({
         pushToken: requester.data()?.push_token,
         title: 'Your order is on the way!',
         body: `${original.item_name} is out for delivery — ETA ~${etaMinutes} min.`,
@@ -212,7 +212,7 @@ async function updateOrderStatus(req, res) {
     }
     if (order_status !== 'DELIVERING') {
       const requester = await users.doc(String(original.requester_id)).get();
-      await sendPushNotification({
+      void sendPushNotification({
         pushToken: requester.data()?.push_token,
         title: 'อัปเดตสถานะออเดอร์',
         body: STATUS_MESSAGE[order_status] || `สถานะออเดอร์เปลี่ยนเป็น ${order_status}`,
