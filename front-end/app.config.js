@@ -9,7 +9,7 @@ export default {
     // (OAuth client IDs are not secrets), so it is safe to keep in app config.
     scheme: 'hiu',
     version: '1.0.0',
-    icon: './assets/hiu-logo.png',
+    icon: './assets/hiu-app-icon.png',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
     plugins: ['expo-notifications'],
@@ -18,8 +18,8 @@ export default {
     android: {
       package: 'com.hiu.dormdelivery',
       adaptiveIcon: {
-        foregroundImage: './assets/hiu-logo.png',
-        backgroundColor: '#FFFFFF',
+        foregroundImage: './assets/hiu-adaptive-foreground.png',
+        backgroundColor: '#FF642E',
       },
     },
 
