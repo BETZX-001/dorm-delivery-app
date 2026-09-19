@@ -4,7 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import { api } from './client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { registerPushNotifications } from './notificationService';
+import { listenForPushTokenChanges, registerPushNotifications } from './notificationService';
 
 const AuthContext = createContext(null);
 const ADMIN_EMAILS = new Set(['6710210025@psu.ac.th']);
@@ -111,6 +111,8 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!firebaseUser?.emailVerified) return;
     registerPushNotifications().catch((error) => console.log('Push registration skipped:', error.message));
+    const subscription = listenForPushTokenChanges();
+    return () => subscription?.remove();
   }, [firebaseUser?.uid, firebaseUser?.emailVerified]);
 
   useEffect(() => {

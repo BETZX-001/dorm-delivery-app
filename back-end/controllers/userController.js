@@ -187,7 +187,12 @@ async function updatePushToken(req, res) {
   const { push_token } = req.body;
   if (!push_token) return res.status(400).json({ error: 'push_token is required' });
   try {
-    await users.doc(req.user.uid).update({ push_token, updated_at: admin.firestore.Timestamp.now() });
+    await users.doc(req.user.uid).set({
+      user_id: req.user.uid,
+      email: req.user.email,
+      push_token,
+      updated_at: admin.firestore.Timestamp.now(),
+    }, { merge: true });
     return res.json({ success: true });
   } catch (error) {
     console.error(error);

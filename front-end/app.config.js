@@ -12,7 +12,13 @@ export default {
     icon: './assets/hiu-app-icon.png',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
-    plugins: ['expo-notifications'],
+    plugins: [[
+      'expo-notifications',
+      {
+        color: '#FF642E',
+        defaultChannel: 'orders',
+      },
+    ]],
 
     // เพิ่มการตั้งค่าแพ็กเกจ Android ตรงนี้ครับ
     android: {
