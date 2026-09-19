@@ -23,6 +23,7 @@ export default {
     // เพิ่มการตั้งค่าแพ็กเกจ Android ตรงนี้ครับ
     android: {
       package: 'com.hiu.dormdelivery',
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON || './google-services.json',
       adaptiveIcon: {
         foregroundImage: './assets/hiu-adaptive-foreground.png',
         backgroundColor: '#FF642E',
