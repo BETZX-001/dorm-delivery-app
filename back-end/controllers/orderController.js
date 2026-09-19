@@ -159,6 +159,7 @@ async function getOrdersForSlot(req, res) {
 async function updateOrderStatus(req, res) {
   const { order_status } = req.body;
   let original;
+  let statusChanged = false;
   try {
     const orderRef = orders.doc(String(req.params.orderId));
     await db.runTransaction(async (transaction) => {
@@ -169,11 +170,16 @@ async function updateOrderStatus(req, res) {
       const slotSnapshot = await transaction.get(slotRef);
       if (!slotSnapshot.exists) { const error = new Error('Slot not found'); error.status = 404; throw error; }
       if (slotSnapshot.data().runner_id !== req.user.uid) { const error = new Error('Only the owning runner can update this order'); error.status = 403; throw error; }
+      // Treat retries as success. Mobile users can tap twice while a sleeping
+      // Render instance is waking up; the first request may already have
+      // committed even though the second request reaches the server too.
+      if (original.order_status === order_status) return;
       const allowedNext = STATE_MACHINE[original.order_status] || [];
       if (!allowedNext.includes(order_status)) {
         const error = new Error(`Cannot move order from ${original.order_status} to ${order_status}`);
         error.status = 409; error.allowedNext = allowedNext; throw error;
       }
+      statusChanged = true;
       transaction.update(orderRef, { order_status, updated_at: admin.firestore.Timestamp.now() });
       if (order_status === 'REJECTED' || order_status === 'COMPLETED') {
         const slot = slotSnapshot.data();
@@ -188,6 +194,9 @@ async function updateOrderStatus(req, res) {
     });
 
     let etaPayload = null;
+    if (!statusChanged) {
+      return res.json({ order: docData(await orderRef.get(), COLLECTIONS.orders), eta: etaPayload, unchanged: true });
+    }
     if (order_status === 'DELIVERING') {
       const sameSlot = await orders.where('slot_id', '==', original.slot_id).get();
       const activeCount = sameSlot.docs.filter((doc) => ACTIVE.has(doc.data().order_status)).length;

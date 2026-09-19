@@ -1,5 +1,5 @@
 // src/screens/main/RunnerDashboardScreen.js
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -64,6 +64,7 @@ export default function RunnerDashboardScreen({ route, navigation }) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [orderView, setOrderView] = useState(route.params.initialView || 'ACTIVE');
+  const updateInFlight = useRef(new Set());
   const backToList = () => returnToOrders ? navigation.goBack() : navigation.popToTop();
 
   const load = useCallback(async (silent = false) => {
@@ -93,8 +94,9 @@ export default function RunnerDashboardScreen({ route, navigation }) {
 
   async function advanceOrder(order) {
     const nextStatus = NEXT_STATUS[order.order_status];
-    if (!nextStatus) return;
+    if (!nextStatus || updateInFlight.current.has(order.order_id)) return;
 
+    updateInFlight.current.add(order.order_id);
     setUpdatingId(order.order_id);
     try {
       const { order: updated } = await api.patch(`/api/orders/${order.order_id}/status`, {
@@ -105,13 +107,16 @@ export default function RunnerDashboardScreen({ route, navigation }) {
       );
       await load(true);
     } catch (err) {
-      Alert.alert('Update failed', err.message);
+      Alert.alert('อัปเดตสถานะไม่สำเร็จ', err.message);
     } finally {
+      updateInFlight.current.delete(order.order_id);
       setUpdatingId(null);
     }
   }
 
   async function rejectOrder(order) {
+    if (updateInFlight.current.has(order.order_id)) return;
+    updateInFlight.current.add(order.order_id);
     setUpdatingId(order.order_id);
     try {
       const { order: updated } = await api.patch(`/api/orders/${order.order_id}/status`, {
@@ -122,8 +127,9 @@ export default function RunnerDashboardScreen({ route, navigation }) {
       );
       await load(true);
     } catch (err) {
-      Alert.alert('Update failed', err.message);
+      Alert.alert('ปฏิเสธออร์เดอร์ไม่สำเร็จ', err.message);
     } finally {
+      updateInFlight.current.delete(order.order_id);
       setUpdatingId(null);
     }
   }
